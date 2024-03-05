@@ -3,6 +3,8 @@ from nextcord import Interaction
 from nextcord.ext import commands
 import json
 import random
+import youtube_dl
+from pytube import YouTube
 
 #If anyone wants to use my code, please ask me on IG: kimmuie_ , for permission.
 f = open("Token.txt", "r")
@@ -25,7 +27,7 @@ async def on_ready():
 )
     print("The Botmuie is now ready for use.")
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
+    
 @client.command(aliases=['prefix', 'Pr', 'pr', 'Pre', 'pre','Pref','pref','Prefi','prefi'])
 async def Prefix(ctx, new_prefix: str):
     global prefix 
@@ -349,5 +351,27 @@ async def on_message(message):
                 random_message = random.choice(okay)
                 await message.channel.send(random_message)
 
+voice_clients = {}
+
+yt_dl_opts = {'format': 'bestaudio/best', 'verbose': True}
+
+ytdl = youtube_dl.YoutubeDL(yt_dl_opts)
+
+ffmpeg_options = {'options': "-vn"}
+
+@client.command(aliases=['play', 'Pl' , 'pl', 'Pla', 'pla'])
+async def Play(ctx, url):
+    try:
+        voice_client = ctx.voice_client
+        if not voice_client:
+            voice_client = await ctx.author.voice.channel.connect()
+            voice_clients[ctx.guild.id] = voice_client
+
+        yt = YouTube(url)
+        song_url = yt.streams.filter(only_audio=True).first().url
+
+        voice_client.play(nextcord.FFmpegPCMAudio(song_url, **ffmpeg_options))
+    except Exception as err:
+        print(err)
 
 client.run(f.read())
