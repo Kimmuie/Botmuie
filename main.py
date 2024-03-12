@@ -3,7 +3,6 @@ from nextcord import Interaction
 from nextcord.ext import commands
 import json
 import random
-import youtube_dl
 from pytube import YouTube
 
 #If anyone wants to use my code, please ask me on IG: kimmuie_ , for permission.
@@ -352,26 +351,65 @@ async def on_message(message):
                 await message.channel.send(random_message)
 
 voice_clients = {}
+queue = []
+rqqueue = []
+q = -1
 
-yt_dl_opts = {'format': 'bestaudio/best', 'verbose': True}
-
-ytdl = youtube_dl.YoutubeDL(yt_dl_opts)
-
-ffmpeg_options = {'options': "-vn"}
-
-@client.command(aliases=['play', 'Pl' , 'pl', 'Pla', 'pla'])
-async def Play(ctx, url):
+@client.command(aliases=['play', 'Pl', 'pl', 'Pla', 'pla'])
+async def Play(ctx, *, url=None):
     try:
+        if url is None:
+            url = json_data.get('url1', []) if mode == "rude" else json_data.get('url2', [])
+            random_message = random.choice(url)
+            await ctx.send(random_message)
+            return
+
         voice_client = ctx.voice_client
         if not voice_client:
             voice_client = await ctx.author.voice.channel.connect()
             voice_clients[ctx.guild.id] = voice_client
 
         yt = YouTube(url)
-        song_url = yt.streams.filter(only_audio=True).first().url
-
-        voice_client.play(nextcord.FFmpegPCMAudio(song_url, **ffmpeg_options))
+        queue.append(yt)
+        rqqueue.append(ctx.author.mention)
+        if not voice_client.is_playing():
+            await play_from_queue(ctx)
     except Exception as err:
         print(err)
+
+        
+async def play_from_queue(ctx):
+    global q
+    q = q + 1
+    yt = queue[q]
+    rq = rqqueue[q]
+    voice_client = ctx.voice_client
+    song_url = yt.streams.get_audio_only().url
+    voice_client.play(nextcord.FFmpegPCMAudio(song_url))
+
+    video_title = yt.title
+    video_url = yt.watch_url
+    video_duration = yt.length
+    duration_minutes = video_duration // 60
+    duration_seconds = video_duration % 60
+
+    embed = nextcord.Embed(title="Now Playing", description=f"[{video_title}]({video_url})", color=0x00b300)
+    embed.set_author(name="Botmuie", icon_url=client.user.avatar.url)
+    embed.add_field(name="Duration", value=f"{duration_minutes}:{duration_seconds:02d}", inline=True)
+    embed.add_field(name="Requested By", value=rq, inline=True) 
+    embed.add_field(name="Queue Position", value=q+2, inline=False) 
+    embed.set_footer(text="ig: kimmuie_")
+    await ctx.send(embed=embed)
+
+@client.command(aliases=['next', 'Ne', 'ne', 'Nex', 'nex'])
+async def Next(ctx):
+    global q
+    if queue[q + 1] == None:
+        embed = nextcord.Embed(title="There is no next video in queue", description=f"{prefix}play (link from youtube)", color=0xe60000)
+        embed.set_author(name="Botmuie", icon_url=client.user.avatar.url)
+        embed.set_footer(text="ig: kimmuie_")
+        await ctx.send(embed=embed)
+    else:
+        await play_from_queue(ctx)
 
 client.run(f.read())
