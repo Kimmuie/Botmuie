@@ -4,6 +4,7 @@ from nextcord.ext import commands
 import json
 import random
 from pytube import YouTube
+import pyttsx3
 
 #If anyone wants to use my code, please ask me on IG: kimmuie_ , for permission.
 f = open("Token.txt", "r")
@@ -14,7 +15,7 @@ prefix="//"
 mode="rude"
 
 client = commands.Bot(command_prefix=prefix, intents=nextcord.Intents.all()) #intents=nextcord.Intents.all()
-
+#api = OpenAI(api_key="YOUR_OPENAI_API_KEY_HERE")
 client.remove_command("help")
 
 with open('content.json', 'r', encoding='utf-8') as file:
@@ -46,7 +47,8 @@ async def Help(ctx):
     embed.add_field(name="Join", value=f"Make the bot to join your current audio channel.\nEx. {prefix}Join", inline=False)
     embed.add_field(name="Leave", value=f"Make the bot to leave your current audio channel.\nEx. {prefix}Leave", inline=False)
     embed.add_field(name="Speak", value=f"Make the bot speak the message you type.\nEx. {prefix}Speak (message)", inline=False)
-    embed.add_field(name="Audio", value=f"Play the MP3 file you specify.\nEx. {prefix}Audio (link or song name)", inline=False)
+    embed.add_field(name="Voice", value=f"Change the bot accent.\nEx. {prefix}Voice (voice type)", inline=False)
+    embed.add_field(name="Play", value=f"Play the MP3 file you specify.\nEx. {prefix}Audio (link or song name)", inline=False)
     embed.add_field(name="Mode", value=f"Change how the bot replies to messages on the channel.\nEx. {prefix}Mode , {prefix}Mode polite , {prefix}Mode rude", inline=False)
     embed.add_field(name="Mute", value=f"Prevent the bot from replying to the message.\nEx. {prefix}Mute , {prefix}Mute message , {prefix}Mute reaction", inline=False)
     embed.add_field(name="Unmute", value=f"Allow the bot to reply to the message.\nEx. {prefix}Unmute , {prefix}Unmute message , {prefix}Unmute reaction", inline=False)
@@ -65,7 +67,8 @@ async def help(interaction: Interaction):
     embed.add_field(name="Join", value=f"Make the bot to join your current audio channel.\nEx. {prefix}Join", inline=False)
     embed.add_field(name="Leave", value=f"Make the bot to leave your current audio channel.\nEx. {prefix}Leave", inline=False)
     embed.add_field(name="Speak", value=f"Make the bot speak the message you type.\nEx. {prefix}Speak (message)", inline=False)
-    embed.add_field(name="Audio", value=f"Play the MP3 file you specify.\nEx. {prefix}Audio (link or song name)", inline=False)
+    embed.add_field(name="Voice", value=f"Change the bot accent.\nEx. {prefix}Voice (voice type)", inline=False)
+    embed.add_field(name="Play", value=f"Play the MP3 file you specify.\nEx. {prefix}Audio (link or song name)", inline=False)
     embed.add_field(name="Mode", value=f"Change how the bot replies to messages on the channel.\nEx. {prefix}Mode , {prefix}Mode polite , {prefix}Mode rude", inline=False)
     embed.add_field(name="Mute", value=f"Prevent the bot from replying to the message.\nEx. {prefix}Mute , {prefix}Mute message , {prefix}Mute reaction", inline=False)
     embed.add_field(name="Unmute", value=f"Allow the bot to reply to the message.\nEx. {prefix}Unmute , {prefix}Unmute message , {prefix}Unmute reaction", inline=False)
@@ -411,5 +414,22 @@ async def Next(ctx):
         await ctx.send(embed=embed)
     else:
         await play_from_queue(ctx)
+
+@client.command(aliases=['speak', 'Sp', 'sp', 'Spe', 'spe', 'Spea', 'spea'])
+async def Speak(ctx, *, text):
+    voice_client = ctx.guild.voice_client
+    if ctx.author.voice is None:
+        connect = json_data.get('3connect1', []) if mode == "rude" else json_data.get('3connect2', [])
+        random_connect = random.choice(connect)
+        await ctx.send(random_connect)
+        return
+    if voice_client is None:
+        channel = ctx.author.voice.channel
+        voice_client = await channel.connect()
+    text_speech = pyttsx3.init()
+    text_speech.save_to_file(text, "output.mp3")
+    text_speech.runAndWait()
+    voice_client.play(nextcord.FFmpegPCMAudio("output.mp3"))
+
 
 client.run(f.read())
