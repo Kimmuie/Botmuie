@@ -4,7 +4,10 @@ from nextcord.ext import commands
 import json
 import random
 from pytube import YouTube
-import pyttsx3
+from gtts import gTTS
+import asyncio
+import os
+from langdetect import detect
 
 #If anyone wants to use my code, please ask me on IG: kimmuie_ , for permission.
 f = open("Token.txt", "r")
@@ -351,7 +354,19 @@ async def on_message(message):
             elif any(word in message.content for word in json_data.get('laugh3', [])):
                 okay = json_data.get('laugh1', []) if mode == "rude" else json_data.get('laugh2', [])
                 random_message = random.choice(okay)
+                await message.channel.send(random_message) 
+            elif any(word in message.content for word in json_data.get('couple3', [])):
+                couple = json_data.get('couple1', []) if mode == "rude" else json_data.get('couple2', [])
+                random_message = random.choice(couple)
+                await message.channel.send(random_message)           
+            elif any(word in message.content for word in json_data.get('manner3', [])):
+                manner = json_data.get('manner1', []) if mode == "rude" else json_data.get('manner2', [])
+                random_message = random.choice(manner)
                 await message.channel.send(random_message)
+            elif "ไม่" in message.content:
+                await message.channel.send("ใช่")            
+            elif "ใช่" in message.content:
+                await message.channel.send("ไม่")
 
 voice_clients = {}
 queue = []
@@ -416,20 +431,37 @@ async def Next(ctx):
         await play_from_queue(ctx)
 
 @client.command(aliases=['speak', 'Sp', 'sp', 'Spe', 'spe', 'Spea', 'spea'])
-async def Speak(ctx, *, text):
-    voice_client = ctx.guild.voice_client
-    if ctx.author.voice is None:
+async def Speak(ctx, *speech):
+    text = " ".join(speech)
+    user = ctx.message.author
+    if user.voice is not None:
+        try:
+            vc = await user.voice.channel.connect()
+        except Exception as e:
+            vc = ctx.voice_client
+            print(f"Error connecting to voice channel: {e}")
+        
+        
+        language = detect(text)
+        if language == 'th':
+            sound = gTTS(text=text, lang="th", slow=False)
+        else:
+            sound = gTTS(text=text, lang="en", slow=False)
+        sound.save("tts-audio.mp3")
+
+        if vc.is_playing():
+            vc.stop()
+
+        source = await nextcord.FFmpegOpusAudio.from_probe("tts-audio.mp3", method="fallback")
+        vc.play(source, after=lambda e: print("Playback finished"))
+        
+        await asyncio.sleep(sound)
+        await vc.disconnect()
+        os.remove("tts-audio.mp3")
+    else:
         connect = json_data.get('3connect1', []) if mode == "rude" else json_data.get('3connect2', [])
         random_connect = random.choice(connect)
         await ctx.send(random_connect)
-        return
-    if voice_client is None:
-        channel = ctx.author.voice.channel
-        voice_client = await channel.connect()
-    text_speech = pyttsx3.init()
-    text_speech.save_to_file(text, "output.mp3")
-    text_speech.runAndWait()
-    voice_client.play(nextcord.FFmpegPCMAudio("output.mp3"))
 
-
+        
 client.run(f.read())
