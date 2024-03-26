@@ -16,6 +16,9 @@ intents.members = True
 
 prefix="//"
 mode="rude"
+voiceGender="female"
+voiceVelocity=False
+voiceVelocity2="slow"
 
 client = commands.Bot(command_prefix=prefix, intents=nextcord.Intents.all()) #intents=nextcord.Intents.all()
 #api = OpenAI(api_key="YOUR_OPENAI_API_KEY_HERE")
@@ -30,7 +33,11 @@ async def on_ready():
 )
     print("The Botmuie is now ready for use.")
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    
+
+@client.event
+async def on_voice_state_update(member):
+    await member.edit(deafen=True)
+
 @client.command(aliases=['prefix', 'Pr', 'pr', 'Pre', 'pre','Pref','pref','Prefi','prefi'])
 async def Prefix(ctx, new_prefix: str):
     global prefix 
@@ -50,7 +57,7 @@ async def Help(ctx):
     embed.add_field(name="Join", value=f"Make the bot to join your current audio channel.\nEx. {prefix}Join", inline=False)
     embed.add_field(name="Leave", value=f"Make the bot to leave your current audio channel.\nEx. {prefix}Leave", inline=False)
     embed.add_field(name="Speak", value=f"Make the bot speak the message you type.\nEx. {prefix}Speak (message)", inline=False)
-    embed.add_field(name="Voice", value=f"Change the bot accent.\nEx. {prefix}Voice (voice type)", inline=False)
+    embed.add_field(name="Voice", value=f"Change the bot accent.\nEx. {prefix}Voice , {prefix}Voice male , {prefix}Voice female , {prefix}Voice slow , {prefix}Voice fast", inline=False)
     embed.add_field(name="Play", value=f"Play the MP3 file you specify.\nEx. {prefix}Audio (link or song name)", inline=False)
     embed.add_field(name="Mode", value=f"Change how the bot replies to messages on the channel.\nEx. {prefix}Mode , {prefix}Mode polite , {prefix}Mode rude", inline=False)
     embed.add_field(name="Mute", value=f"Prevent the bot from replying to the message.\nEx. {prefix}Mute , {prefix}Mute message , {prefix}Mute reaction", inline=False)
@@ -70,11 +77,25 @@ async def help(interaction: Interaction):
     embed.add_field(name="Join", value=f"Make the bot to join your current audio channel.\nEx. {prefix}Join", inline=False)
     embed.add_field(name="Leave", value=f"Make the bot to leave your current audio channel.\nEx. {prefix}Leave", inline=False)
     embed.add_field(name="Speak", value=f"Make the bot speak the message you type.\nEx. {prefix}Speak (message)", inline=False)
-    embed.add_field(name="Voice", value=f"Change the bot accent.\nEx. {prefix}Voice (voice type)", inline=False)
+    embed.add_field(name="Voice", value=f"Change the bot accent.\nEx. {prefix}Voice , {prefix}Voice male , {prefix}Voice female , {prefix}Voice slow , {prefix}Voice fast", inline=False)
     embed.add_field(name="Play", value=f"Play the MP3 file you specify.\nEx. {prefix}Audio (link or song name)", inline=False)
     embed.add_field(name="Mode", value=f"Change how the bot replies to messages on the channel.\nEx. {prefix}Mode , {prefix}Mode polite , {prefix}Mode rude", inline=False)
     embed.add_field(name="Mute", value=f"Prevent the bot from replying to the message.\nEx. {prefix}Mute , {prefix}Mute message , {prefix}Mute reaction", inline=False)
     embed.add_field(name="Unmute", value=f"Allow the bot to reply to the message.\nEx. {prefix}Unmute , {prefix}Unmute message , {prefix}Unmute reaction", inline=False)
+    embed.set_footer(text="ig: kimmuie_")
+    await interaction.response.send_message(embed=embed)
+
+@client.slash_command(name = "info", description = "Show all Botmuie information that have been set up")
+async def info(interaction: Interaction):
+    prefix = await client.get_prefix(interaction.message)
+    global mode
+    global voiceGender
+    global voiceVelocity2
+    embed = nextcord.Embed(title="Botmuie Information", color=0x8d8d8d)
+    embed.set_author(name="Botmuie", icon_url=client.user.avatar.url)
+    embed.add_field(name="Prefix Setting", value=f"Prefix = **{prefix}**", inline=False)
+    embed.add_field(name="Mode Setting", value=f"Mode = **{mode}**", inline=False)
+    embed.add_field(name="Voice Setting", value=f"Gender = **{voiceGender}** (male voice function havent been used yet)\nVelocity = **{voiceVelocity2}**", inline=False)
     embed.set_footer(text="ig: kimmuie_")
     await interaction.response.send_message(embed=embed)
 
@@ -432,6 +453,8 @@ async def Next(ctx):
 
 @client.command(aliases=['speak', 'Sp', 'sp', 'Spe', 'spe', 'Spea', 'spea'])
 async def Speak(ctx, *speech):
+    global voiceGender
+    global voiceVelocity
     text = " ".join(speech)
     user = ctx.message.author
     if user.voice is not None:
@@ -444,9 +467,9 @@ async def Speak(ctx, *speech):
         
         language = detect(text)
         if language == 'th':
-            sound = gTTS(text=text, lang="th", slow=False)
+            sound = gTTS(text=text, lang="th", slow=voiceVelocity)
         else:
-            sound = gTTS(text=text, lang="en", slow=False)
+            sound = gTTS(text=text, lang="en", slow=voiceVelocity)
         sound.save("tts-audio.mp3")
 
         if vc.is_playing():
@@ -463,5 +486,63 @@ async def Speak(ctx, *speech):
         random_connect = random.choice(connect)
         await ctx.send(random_connect)
 
-        
+@client.command(aliases=['voice', 'Vo', 'vo', 'Voi', 'voi','Voic','voic'])
+async def Voice(ctx, voice_type: str = ''):
+    global voiceGender
+    global voiceVelocity
+    global voiceVelocity2
+    if voice_type.lower() == 'male' or voice_type.lower() == 'm':
+        voiceGender = "male"
+        await ctx.send("Botmuie is using male voice.")
+    elif voice_type.lower() == 'female' or voice_type.lower() == 'fe':
+        voiceGender = "female"
+        await ctx.send("Botmuie is using female voice.")
+    elif voice_type.lower() == 'slow' or voice_type.lower() == 's':
+        voiceVelocity = False
+        voiceVelocity2 = "slow"
+        await ctx.send("Botmuie voice velocity is slower.")
+    elif voice_type.lower() == 'fast' or voice_type.lower() == 'fa':
+        voiceVelocity = True
+        voiceVelocity2 = "fast"
+        await ctx.send("Botmuie voice velocity is faster.")
+    elif voice_type.lower() == '':
+        class voiceView(nextcord.ui.View):
+            def __init__(self):
+                super().__init__()
+
+            @nextcord.ui.button(label="Male", style=nextcord.ButtonStyle.green)
+            async def male_button_callback(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+                global voiceGender
+                voiceGender = "male"
+                await interaction.response.send_message("Botmuie is using male voice.")
+                self.stop()
+
+            @nextcord.ui.button(label="Female", style=nextcord.ButtonStyle.green)
+            async def female_button_callback(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+                global voiceGender
+                voiceGender = "female"
+                await interaction.response.send_message("Botmuie is using female voice.")
+                self.stop()
+            
+            @nextcord.ui.button(label="Slow", style=nextcord.ButtonStyle.blurple)
+            async def slow_button_callback(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+                global voiceVelocity
+                global voiceVelocity2
+                voiceVelocity = False
+                voiceVelocity2 = "slow"
+                await interaction.response.send_message("Botmuie voice velocity is slower.")
+                self.stop()
+            @nextcord.ui.button(label="Fast", style=nextcord.ButtonStyle.blurple)
+            async def fast_button_callback(self, button: nextcord.ui.Button, interaction: nextcord.Interaction):
+                global voiceVelocity
+                global voiceVelocity2
+                voiceVelocity = True
+                voiceVelocity2 = "fast"
+                await interaction.response.send_message("Botmuie voice velocity is faster.")
+                self.stop()
+
+        await ctx.send("Please select a voice type to set up for Botmuie:", view=voiceView())
+    else:
+        await ctx.send("Invalid voice type. Please specify either 'male' or 'female' or 'slow' or 'fast'.")
+
 client.run(f.read())
