@@ -3,3 +3,8 @@ I created Botmuie, a Discord bot, because my server needed something annoying. B
 Sure, if you guys wants to invite Botmuie to your Discord server, you can use the following link: [Botmuie Invite Link](https://discord.com/api/oauth2/authorize?client_id=1208700289948065845&permissions=8&scope=bot)
 
 [ig: kimmuie_](https://instagram.com/kimmuie_)  
+
+**Used Language/Tools**
+<div>
+  <img src="https://github.com/devicons/devicon/blob/master/icons/python/python-original.svg" title="Python"width="40" height="40"/>&nbsp;
+</div>  
