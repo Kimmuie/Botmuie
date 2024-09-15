@@ -21,7 +21,7 @@ This bot has set the standard prefix as "//".  Any user can command it using //
 </div>
 <br>  
 
-If anyone wants to invite Botmuie to your Discord server, you can use the following link [Botmuie Invitation Link](https://discord.com/api/oauth2/authorize?client_id=1208700289948065845&permissions=8&scope=bot), by the way bot isn't always online.
+If anyone wants to invite Botmuie to your Discord server, you can use [Botmuie Invitation Link](https://discord.com/api/oauth2/authorize?client_id=1208700289948065845&permissions=8&scope=bot), by the way bot isn't always online.
 
 ### Flowchart 
 <div>
