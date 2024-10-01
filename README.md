@@ -31,7 +31,7 @@ If anyone wants to invite Botmuie to your Discord server, you can use [Botmuie I
 
 ### Demo Command
 <div>
-  <img src="./illustration/UI1.png"  title="UI" height="230"/>
-  <img src="./illustration/UI2.png"  title="UI" height="230"/>
+  <img src="./illustration/UI1.png"  title="UI" height="210"/>
+  <img src="./illustration/UI2.png"  title="UI" height="210"/>
 </div>
 
